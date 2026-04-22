@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="description" content="Convierte tu video .mp4 en una experiencia WebAR sobre superficie. Herramienta gratuita de Lookiar." />
+  <title>AR Video Surface Builder — Lookiar</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="container">
+      <div class="header-inner">
+        <a href="https://lookiar.com" target="_blank" class="logo" aria-label="Lookiar">
+          <span class="logo-mark">L</span>
+          <span class="logo-text">Lookiar</span>
+        </a>
+        <div class="header-badge">
+          <span class="badge-dot"></span>
+          Herramienta gratuita · WebAR
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-tag">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        Video · WebAR · Surface
+      </div>
+      <h1 class="hero-title">Convierte tu video en una<br /><span class="gradient-text">experiencia WebAR</span></h1>
+      <p class="hero-subtitle">Sube un video .mp4, configúralo para superficie y genera una experiencia lista para usar en Realidad Aumentada desde el navegador.</p>
+      <div class="hero-features">
+        <span class="feature-pill">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Procesamiento local
+        </span>
+        <span class="feature-pill">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Sin registro
+        </span>
+        <span class="feature-pill">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          WebXR estándar
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN APP -->
+  <main class="app-main">
+    <div class="container">
+
+      <!-- STEP 1: UPLOAD -->
+      <section class="step-section" id="step-upload">
+        <div class="step-header">
+          <div class="step-number">01</div>
+          <div>
+            <h2 class="step-title">Sube tu video</h2>
+            <p class="step-desc">Formatos aceptados: .mp4 · Máximo 100 MB</p>
+          </div>
+        </div>
+
+        <div class="upload-zone" id="uploadZone" tabindex="0" role="button" aria-label="Área de carga de video">
+          <input type="file" id="fileInput" accept="video/mp4,.mp4,video/*" hidden />
+          <div class="upload-idle" id="uploadIdle">
+            <div class="upload-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <p class="upload-main">Arrastra tu video .mp4 aquí</p>
+            <p class="upload-sub">o <button class="link-btn" id="browseBtn">haz clic para seleccionarlo desde tu dispositivo</button></p>
+            <p class="upload-note">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Procesamiento local: tu archivo no se sube a ningún servidor
+            </p>
+          </div>
+          <div class="upload-loading hidden" id="uploadLoading">
+            <div class="spinner"></div>
+            <p>Analizando video…</p>
+          </div>
+          <div class="upload-success hidden" id="uploadSuccess">
+            <div class="file-info">
+              <div class="file-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+              </div>
+              <div class="file-details">
+                <span class="file-name" id="fileName">—</span>
+                <span class="file-meta" id="fileMeta">—</span>
+              </div>
+              <button class="remove-btn" id="removeBtn" title="Quitar archivo">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="upload-error hidden" id="uploadError">
+            <div class="error-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <p id="errorMsg">Error al cargar el archivo</p>
+            <button class="retry-btn" id="retryBtn">Intentar de nuevo</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 2: PREVIEW -->
+      <section class="step-section hidden" id="step-preview">
+        <div class="step-header">
+          <div class="step-number">02</div>
+          <div>
+            <h2 class="step-title">Vista previa del video</h2>
+            <p class="step-desc">Revisa que el archivo sea el correcto antes de continuar</p>
+          </div>
+        </div>
+
+        <div class="preview-card">
+          <div class="video-wrapper" id="videoWrapper">
+            <video id="previewVideo" playsinline controls></video>
+          </div>
+          <div class="video-stats" id="videoStats">
+            <div class="stat-item">
+              <span class="stat-label">Resolución</span>
+              <span class="stat-value" id="statResolution">—</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Duración</span>
+              <span class="stat-value" id="statDuration">—</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Aspecto detectado</span>
+              <span class="stat-value" id="statAspect">—</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Tamaño</span>
+              <span class="stat-value" id="statSize">—</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 3: CONFIG -->
+      <section class="step-section hidden" id="step-config">
+        <div class="step-header">
+          <div class="step-number">03</div>
+          <div>
+            <h2 class="step-title">Configuración</h2>
+            <p class="step-desc">Define cómo se verá tu experiencia AR</p>
+          </div>
+        </div>
+
+        <div class="config-grid">
+          <!-- Nombre del proyecto -->
+          <div class="config-card full-width">
+            <label class="config-label" for="projectName">Nombre del proyecto</label>
+            <input type="text" id="projectName" class="config-input" placeholder="Mi experiencia AR" maxlength="60" />
+          </div>
+
+          <!-- Relación de aspecto -->
+          <div class="config-card">
+            <label class="config-label">Relación de aspecto del plano</label>
+            <div class="radio-group" id="aspectGroup">
+              <label class="radio-option" data-value="auto">
+                <input type="radio" name="aspect" value="auto" checked />
+                <span class="radio-box">
+                  <span class="radio-icon">↔</span>
+                  <span class="radio-title">Automática</span>
+                  <span class="radio-sub">Según el video</span>
+                </span>
+              </label>
+              <label class="radio-option" data-value="16:9">
+                <input type="radio" name="aspect" value="16:9" />
+                <span class="radio-box">
+                  <span class="radio-icon aspect-landscape"></span>
+                  <span class="radio-title">16:9</span>
+                  <span class="radio-sub">Horizontal</span>
+                </span>
+              </label>
+              <label class="radio-option" data-value="9:16">
+                <input type="radio" name="aspect" value="9:16" />
+                <span class="radio-box">
+                  <span class="radio-icon aspect-portrait"></span>
+                  <span class="radio-title">9:16</span>
+                  <span class="radio-sub">Vertical</span>
+                </span>
+              </label>
+              <label class="radio-option" data-value="1:1">
+                <input type="radio" name="aspect" value="1:1" />
+                <span class="radio-box">
+                  <span class="radio-icon aspect-square"></span>
+                  <span class="radio-title">1:1</span>
+                  <span class="radio-sub">Cuadrado</span>
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Tamaño del plano -->
+          <div class="config-card">
+            <label class="config-label">Tamaño del plano en AR</label>
+            <div class="radio-group" id="sizeGroup">
+              <label class="radio-option" data-value="small">
+                <input type="radio" name="size" value="small" />
+                <span class="radio-box">
+                  <span class="radio-icon">S</span>
+                  <span class="radio-title">Pequeño</span>
+                  <span class="radio-sub">0.3m × auto</span>
+                </span>
+              </label>
+              <label class="radio-option" data-value="medium">
+                <input type="radio" name="size" value="medium" checked />
+                <span class="radio-box">
+                  <span class="radio-icon">M</span>
+                  <span class="radio-title">Mediano</span>
+                  <span class="radio-sub">0.6m × auto</span>
+                </span>
+              </label>
+              <label class="radio-option" data-value="large">
+                <input type="radio" name="size" value="large" />
+                <span class="radio-box">
+                  <span class="radio-icon">L</span>
+                  <span class="radio-title">Grande</span>
+                  <span class="radio-sub">1.0m × auto</span>
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Reproducción -->
+          <div class="config-card">
+            <label class="config-label">Reproducción</label>
+            <div class="toggle-list">
+              <label class="toggle-item">
+                <div class="toggle-info">
+                  <span class="toggle-name">Autoplay</span>
+                  <span class="toggle-desc">Reproducir al colocar en superficie</span>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="optAutoplay" checked />
+                  <span class="switch-track"></span>
+                </div>
+              </label>
+              <label class="toggle-item">
+                <div class="toggle-info">
+                  <span class="toggle-name">Loop</span>
+                  <span class="toggle-desc">Repetir el video infinitamente</span>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="optLoop" checked />
+                  <span class="switch-track"></span>
+                </div>
+              </label>
+              <label class="toggle-item">
+                <div class="toggle-info">
+                  <span class="toggle-name">Muted</span>
+                  <span class="toggle-desc">Sin sonido (recomendado para autoplay)</span>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="optMuted" checked />
+                  <span class="switch-track"></span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Efectos -->
+          <div class="config-card">
+            <label class="config-label">Efectos visuales</label>
+            <div class="toggle-list">
+              <label class="toggle-item">
+                <div class="toggle-info">
+                  <span class="toggle-name">Sombra falsa</span>
+                  <span class="toggle-desc">Sombra suave bajo el plano AR</span>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="optShadow" checked />
+                  <span class="switch-track"></span>
+                </div>
+              </label>
+              <label class="toggle-item">
+                <div class="toggle-info">
+                  <span class="toggle-name">Primer frame como póster</span>
+                  <span class="toggle-desc">Captura automática de miniatura</span>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="optPoster" checked />
+                  <span class="switch-track"></span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Modo de salida -->
+          <div class="config-card full-width">
+            <label class="config-label">Modo de salida</label>
+            <div class="output-mode-group">
+              <label class="output-option active" id="modeDemo">
+                <input type="radio" name="mode" value="demo" checked />
+                <div class="output-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 6s4-6 11-6 11 6 11 6-4 6-11 6-11-6-11-6z"/><circle cx="12" cy="6" r="2"/></svg>
+                </div>
+                <div class="output-info">
+                  <span class="output-title">Vista previa WebAR</span>
+                  <span class="output-desc">Abre directamente en el navegador con WebXR</span>
+                </div>
+                <div class="output-check">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+              </label>
+              <label class="output-option" id="modeExport">
+                <input type="radio" name="mode" value="export" />
+                <div class="output-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </div>
+                <div class="output-info">
+                  <span class="output-title">Exportar paquete</span>
+                  <span class="output-desc">Descarga un .zip listo para subir a tu servidor</span>
+                </div>
+                <div class="output-check">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- GENERATE BUTTON -->
+        <div class="generate-row">
+          <button class="btn-generate" id="generateBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Generar experiencia AR
+          </button>
+        </div>
+      </section>
+
+      <!-- STEP 4: GENERATING -->
+      <section class="step-section hidden" id="step-generating">
+        <div class="generating-card">
+          <div class="generating-spinner">
+            <div class="spin-ring"></div>
+            <div class="spin-core">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            </div>
+          </div>
+          <h3 class="generating-title">Generando experiencia…</h3>
+          <p class="generating-sub" id="generatingMsg">Preparando el entorno WebAR</p>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 5: RESULT -->
+      <section class="step-section hidden" id="step-result">
+        <div class="step-header">
+          <div class="step-number success-num">✓</div>
+          <div>
+            <h2 class="step-title">Tu experiencia está lista</h2>
+            <p class="step-desc">Todo generado localmente en tu dispositivo</p>
+          </div>
+        </div>
+
+        <div class="result-card">
+          <div class="result-summary">
+            <div class="result-summary-title">Resumen del proyecto</div>
+            <div class="result-stats">
+              <div class="result-stat">
+                <span class="result-stat-label">Proyecto</span>
+                <span class="result-stat-value" id="resSummaryName">—</span>
+              </div>
+              <div class="result-stat">
+                <span class="result-stat-label">Duración</span>
+                <span class="result-stat-value" id="resSummaryDuration">—</span>
+              </div>
+              <div class="result-stat">
+                <span class="result-stat-label">Resolución</span>
+                <span class="result-stat-value" id="resSummaryResolution">—</span>
+              </div>
+              <div class="result-stat">
+                <span class="result-stat-label">Aspecto</span>
+                <span class="result-stat-value" id="resSummaryAspect">—</span>
+              </div>
+              <div class="result-stat">
+                <span class="result-stat-label">Tamaño plano</span>
+                <span class="result-stat-value" id="resSummarySize">—</span>
+              </div>
+              <div class="result-stat">
+                <span class="result-stat-label">Reproducción</span>
+                <span class="result-stat-value" id="resSummaryPlay">—</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="result-actions">
+            <button class="btn-generate" id="openDemoBtn" style="width:100%;max-width:340px;justify-content:center">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 6s4-6 11-6 11 6 11 6-4 6-11 6-11-6-11-6z"/><circle cx="12" cy="6" r="2"/></svg>
+              Iniciar experiencia AR
+            </button>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn-secondary" id="downloadBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Descargar ZIP
+              </button>
+              <button class="btn-ghost" id="resetBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.56"/></svg>
+                Crear otro
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <a href="https://lookiar.com" target="_blank" class="footer-logo">
+            <span class="logo-mark">L</span>
+            <span>Lookiar</span>
+          </a>
+          <span class="footer-tagline">Herramientas gratuitas para WebAR</span>
+        </div>
+        <div class="footer-links">
+          <a href="https://lookiar.com" target="_blank">lookiar.com</a>
+          <a href="https://optimizer.lookiar.com" target="_blank">GLB Optimizer</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2025 Lookiar · AR Video Surface Builder</span>
+        <span class="footer-tech">Powered by WebXR · Three.js · JSZip</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL AR: Desktop muestra QR, Mobile abre directo -->
+  <div class="modal-overlay hidden" id="arModal">
+    <div class="modal-ar-card">
+
+      <button class="modal-ar-close" id="closeModal">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <!-- Logo -->
+      <div class="modal-ar-logo">
+        <div class="logo-mark" style="width:24px;height:24px;font-size:12px">L</div>
+        <span>Lookiar · WebAR</span>
+      </div>
+
+      <!-- QR box -->
+      <div class="modal-ar-qr-wrap" id="modalQrBox">
+        <div id="modalQrCanvas"></div>
+        <div class="modal-ar-qr-ph" id="modalQrPlaceholder">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM17 17h3v3h-3zM14 20h3"/></svg>
+          <span>Generando QR…</span>
+        </div>
+        <div class="qr-expired-overlay hidden" id="modalQrExpiredOverlay">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>QR expirado</span>
+        </div>
+      </div>
+
+      <!-- Instrucción principal -->
+      <p class="modal-ar-instruction" id="modalQrCompat">
+        Escanea este código con tu teléfono para ver la experiencia en Realidad Aumentada
+      </p>
+
+      <!-- Contador -->
+      <div class="qr-timer" id="modalQrTimer">
+        <span class="timer-dot" id="modalTimerDot"></span>
+        <span id="modalCountdownText">Disponible por 1 hora</span>
+      </div>
+
+      <!-- Expirado -->
+      <div class="qr-expired-msg hidden" id="modalQrExpiredMsg">
+        <p>Este código QR expiró.</p>
+        <button class="btn-qr-refresh" id="modalRefreshBtn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.56"/></svg>
+          Generar nuevo QR
+        </button>
+      </div>
+
+      <!-- Sin URL (file://) -->
+      <div class="modal-ar-nourl hidden" id="modalNoUrl">
+        <p>Para activar el QR, despliega en Vercel:</p>
+        <code>npx vercel</code>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
