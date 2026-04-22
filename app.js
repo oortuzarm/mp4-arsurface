@@ -845,16 +845,19 @@ function generateQRInto(canvasId, placeholderId, url) {
   var container   = $(canvasId);
   var placeholder = $(placeholderId);
   if (!container) return;
-  container.innerHTML = '';
+
+  // Limpiar cualquier render anterior completamente
+  while (container.firstChild) container.removeChild(container.firstChild);
   if (!url) return;
+
   try {
     new QRCode(container, {
       text:         url,
-      width:        156,
-      height:       156,
-      colorDark:    '#111118',
+      width:        160,   // QR más pequeño que la caja (216px) → margen blanco visible
+      height:       160,
+      colorDark:    '#000000',
       colorLight:   '#ffffff',
-      correctLevel: QRCode.CorrectLevel.M,
+      correctLevel: QRCode.CorrectLevel.H,  // máxima corrección de errores
     });
     if (placeholder) placeholder.style.display = 'none';
   } catch(e) { console.error('QR error:', e); }
