@@ -350,23 +350,57 @@ function doGenerate() {
 // ─── CLOUD UPLOAD ─────────────────────────────────────────────────────────────
 
 function uploadVideoToBlob(file) {
-  var contentType = file.type || 'video/mp4';
-  return fetch('/api/upload-video', {
+  var rawExt = (file.name || '').split('.').pop().toLowerCase();
+  var ext = (rawExt === 'mov') ? 'mov' : 'mp4';
+  var pathname = 'videos/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.' + ext;
+  var handleUploadUrl = window.location.origin + '/api/upload-token';
+
+  // Step 1: get client token from our server (no file bytes involved)
+  return fetch('/api/upload-token', {
     method: 'POST',
-    headers: { 'Content-Type': contentType },
-    body: file,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      type: 'blob.generate-client-token',
+      payload: { pathname: pathname, callbackUrl: handleUploadUrl, multipart: false },
+    }),
   })
   .then(function(res) {
     return res.text().then(function(text) {
       if (!res.ok) {
-        var msg;
-        try { msg = JSON.parse(text).error; } catch(e) { msg = text; }
-        throw new Error('Error al subir video (' + res.status + '): ' + (msg || 'sin detalle'));
+        var msg; try { msg = JSON.parse(text).error; } catch(e) { msg = text.slice(0, 300); }
+        throw new Error('Error de token (' + res.status + '): ' + msg);
       }
-      return JSON.parse(text);
+      try { return JSON.parse(text); } catch(e) { throw new Error('Token inválido: ' + text.slice(0, 200)); }
     });
   })
-  .then(function(data) { return data.videoUrl; });
+  .then(function(data) {
+    if (!data.clientToken) throw new Error('Servidor no devolvió clientToken');
+    var contentType = file.type || 'video/mp4';
+
+    // Step 2: upload file directly to Vercel Blob (no serverless, no 413)
+    return fetch('https://blob.vercel-storage.com/' + encodeURIComponent(pathname), {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Bearer ' + data.clientToken,
+        'x-content-type': contentType,
+        'x-cache-control-max-age': '3600',
+      },
+      body: file,
+    });
+  })
+  .then(function(res) {
+    return res.text().then(function(text) {
+      if (!res.ok) {
+        var msg; try { msg = JSON.parse(text).error || text; } catch(e) { msg = text.slice(0, 300); }
+        throw new Error('Error subiendo a Blob (' + res.status + '): ' + msg);
+      }
+      try { return JSON.parse(text); } catch(e) { throw new Error('Blob respuesta inválida: ' + text.slice(0, 200)); }
+    });
+  })
+  .then(function(blob) {
+    if (!blob.url) throw new Error('Blob no devolvió URL');
+    return blob.url;
+  });
 }
 
 function saveExperience(html) {
