@@ -1,8 +1,14 @@
 const { put } = require('@vercel/blob');
-const { kv } = require('@vercel/kv');
+const Redis = require('ioredis');
 const { randomBytes } = require('crypto');
 
 const TTL_SECONDS = 3600;
+
+let redis;
+function getRedis() {
+  if (!redis) redis = new Redis(process.env.REDIS_URL, { tls: { rejectUnauthorized: false } });
+  return redis;
+}
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
@@ -20,12 +26,14 @@ module.exports = async function handler(req, res) {
       contentType: 'text/html; charset=utf-8',
     });
 
-    await kv.set(id, blob.url, { ex: TTL_SECONDS });
+    const expiresAt = Date.now() + TTL_SECONDS * 1000;
+
+    const client = getRedis();
+    await client.set(id, JSON.stringify({ blobUrl: blob.url, expiresAt }), 'EX', TTL_SECONDS);
 
     const proto = req.headers['x-forwarded-proto'] || 'https';
     const host  = req.headers['x-forwarded-host']  || req.headers.host;
-    const shortUrl  = proto + '://' + host + '/?experience=' + id;
-    const expiresAt = Date.now() + TTL_SECONDS * 1000;
+    const shortUrl = proto + '://' + host + '/?experience=' + id;
 
     return res.json({ id, shortUrl, expiresAt });
   } catch (err) {
