@@ -610,26 +610,29 @@ function buildArHtml(config, vw, vh, posterDataUrl, zipMode, videoUrl) {
 '  videoMesh.visible = false;\n' +
 '  scene.add(videoMesh);\n' +
 '\n' +
-'  // Shadow (diffuse radial gradient, child of videoMesh)\n' +
+'  // Shadow — blurred canvas texture, no real Three.js shadow cost\n' +
 '  if (SHADOW) {\n' +
-'    const sCvs = document.createElement("canvas");\n' +
-'    sCvs.width = 256; sCvs.height = 256;\n' +
-'    const sCtx = sCvs.getContext("2d");\n' +
-'    const sGrad = sCtx.createRadialGradient(128, 128, 0, 128, 128, 128);\n' +
-'    sGrad.addColorStop(0, "rgba(0,0,0,0.5)");\n' +
-'    sGrad.addColorStop(0.6, "rgba(0,0,0,0.15)");\n' +
-'    sGrad.addColorStop(1, "rgba(0,0,0,0)");\n' +
+'    const sCv = document.createElement("canvas");\n' +
+'    sCv.width = 256; sCv.height = 64;\n' +
+'    const sCtx = sCv.getContext("2d");\n' +
+'    sCtx.save();\n' +
+'    sCtx.translate(128, 32);\n' +
+'    sCtx.scale(128, 32); // stretch circle → ellipse matching shadow shape\n' +
+'    const sGrad = sCtx.createRadialGradient(0,0,0, 0,0,1);\n' +
+'    sGrad.addColorStop(0,   "rgba(0,0,0,0.52)");\n' +
+'    sGrad.addColorStop(0.55,"rgba(0,0,0,0.22)");\n' +
+'    sGrad.addColorStop(1.0, "rgba(0,0,0,0)");\n' +
 '    sCtx.fillStyle = sGrad;\n' +
-'    sCtx.fillRect(0, 0, 256, 256);\n' +
-'    const sTex = new THREE.CanvasTexture(sCvs);\n' +
-'    shadowMesh = new THREE.Mesh(\n' +
-'      new THREE.PlaneGeometry(PLANE_W * 1.2, PLANE_H * 1.2),\n' +
-'      new THREE.MeshBasicMaterial({ map: sTex, transparent: true, depthWrite: false })\n' +
-'    );\n' +
-'    shadowMesh.position.set(0, -0.01, 0);\n' +
-'    shadowMesh.renderOrder = -1;\n' +
+'    sCtx.fillRect(-1,-1,2,2);\n' +
+'    sCtx.restore();\n' +
+'    const sTex = new THREE.CanvasTexture(sCv);\n' +
+'    const sGeo = new THREE.PlaneGeometry(PLANE_W*1.4, PLANE_H*0.3);\n' +
+'    sGeo.rotateX(-Math.PI/2);\n' +
+'    shadowMesh = new THREE.Mesh(sGeo, new THREE.MeshBasicMaterial({\n' +
+'      map: sTex, transparent: true, depthWrite: false\n' +
+'    }));\n' +
 '    shadowMesh.visible = false;\n' +
-'    videoMesh.add(shadowMesh);\n' +
+'    scene.add(shadowMesh);\n' +
 '  }\n' +
 '\n' +
 '  try {\n' +
@@ -678,7 +681,16 @@ function buildArHtml(config, vw, vh, posterDataUrl, zipMode, videoUrl) {
 '    videoMesh.lookAt(lookTarget);\n' +
 '  }\n' +
 '  videoMesh.visible = true;\n' +
-'  if (SHADOW && shadowMesh) shadowMesh.visible = true;\n' +
+'  if (SHADOW && shadowMesh) {\n' +
+'    if (isHorizontal) {\n' +
+'      shadowMesh.position.copy(reticle.position);\n' +
+'      shadowMesh.position.y += 0.001;\n' +
+'      shadowMesh.rotation.set(0, videoMesh.rotation.y, 0);\n' +
+'      shadowMesh.visible = true;\n' +
+'    } else {\n' +
+'      shadowMesh.visible = false;\n' +
+'    }\n' +
+'  }\n' +
 '  reticle.visible = false;\n' +
 '  hintEl.style.opacity = "0";\n' +
 '  hudHint.textContent = "Video colocado";\n' +
