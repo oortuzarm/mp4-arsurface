@@ -677,7 +677,7 @@ function buildArHtml(config, vw, vh, posterDataUrl, zipMode, videoUrl) {
 '    ).normalize();\n' +
 '    videoMesh.rotation.set(0, Math.atan2(toCamera.x, toCamera.z), 0);\n' +
 '  } else {\n' +
-'    const lookTarget = new THREE.Vector3().subVectors(reticle.position, lastHitNormal);\n' +
+'    const lookTarget = new THREE.Vector3().addVectors(reticle.position, lastHitNormal);\n' +
 '    videoMesh.lookAt(lookTarget);\n' +
 '  }\n' +
 '  videoMesh.visible = true;\n' +
