@@ -610,13 +610,26 @@ function buildArHtml(config, vw, vh, posterDataUrl, zipMode, videoUrl) {
 '  videoMesh.visible = false;\n' +
 '  scene.add(videoMesh);\n' +
 '\n' +
-'  // Shadow\n' +
+'  // Shadow (diffuse radial gradient, child of videoMesh)\n' +
 '  if (SHADOW) {\n' +
-'    const sGeo = new THREE.PlaneGeometry(PLANE_W*1.3, PLANE_H*0.2);\n' +
-'    sGeo.rotateX(-Math.PI/2);\n' +
-'    shadowMesh = new THREE.Mesh(sGeo, new THREE.MeshBasicMaterial({ color:0x000000, transparent:true, opacity:0.32 }));\n' +
+'    const sCvs = document.createElement("canvas");\n' +
+'    sCvs.width = 256; sCvs.height = 256;\n' +
+'    const sCtx = sCvs.getContext("2d");\n' +
+'    const sGrad = sCtx.createRadialGradient(128, 128, 0, 128, 128, 128);\n' +
+'    sGrad.addColorStop(0, "rgba(0,0,0,0.5)");\n' +
+'    sGrad.addColorStop(0.6, "rgba(0,0,0,0.15)");\n' +
+'    sGrad.addColorStop(1, "rgba(0,0,0,0)");\n' +
+'    sCtx.fillStyle = sGrad;\n' +
+'    sCtx.fillRect(0, 0, 256, 256);\n' +
+'    const sTex = new THREE.CanvasTexture(sCvs);\n' +
+'    shadowMesh = new THREE.Mesh(\n' +
+'      new THREE.PlaneGeometry(PLANE_W * 1.2, PLANE_H * 1.2),\n' +
+'      new THREE.MeshBasicMaterial({ map: sTex, transparent: true, depthWrite: false })\n' +
+'    );\n' +
+'    shadowMesh.position.set(0, -0.01, 0);\n' +
+'    shadowMesh.renderOrder = -1;\n' +
 '    shadowMesh.visible = false;\n' +
-'    scene.add(shadowMesh);\n' +
+'    videoMesh.add(shadowMesh);\n' +
 '  }\n' +
 '\n' +
 '  try {\n' +
@@ -665,16 +678,7 @@ function buildArHtml(config, vw, vh, posterDataUrl, zipMode, videoUrl) {
 '    videoMesh.lookAt(lookTarget);\n' +
 '  }\n' +
 '  videoMesh.visible = true;\n' +
-'  if (SHADOW && shadowMesh) {\n' +
-'    if (isHorizontal) {\n' +
-'      shadowMesh.position.copy(reticle.position);\n' +
-'      shadowMesh.position.y += 0.001;\n' +
-'      shadowMesh.rotation.set(0, 0, 0);\n' +
-'      shadowMesh.visible = true;\n' +
-'    } else {\n' +
-'      shadowMesh.visible = false;\n' +
-'    }\n' +
-'  }\n' +
+'  if (SHADOW && shadowMesh) shadowMesh.visible = true;\n' +
 '  reticle.visible = false;\n' +
 '  hintEl.style.opacity = "0";\n' +
 '  hudHint.textContent = "Video colocado";\n' +
