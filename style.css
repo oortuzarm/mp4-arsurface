@@ -97,6 +97,27 @@ img, video { display: block; max-width: 100%; }
   letter-spacing: -0.3px;
 }
 
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-cta {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  border: 1px solid rgba(41,171,226,0.35);
+  padding: 6px 14px;
+  border-radius: 8px;
+  transition: background var(--transition), border-color var(--transition);
+}
+.header-cta:hover {
+  background: rgba(41,171,226,0.1);
+  border-color: var(--accent);
+}
+
 .header-badge {
   display: flex;
   align-items: center;
@@ -1356,28 +1377,24 @@ img, video { display: block; max-width: 100%; }
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
   position: relative;
   box-shadow: 0 8px 32px rgba(0,0,0,0.35);
   flex-shrink: 0;
-  padding: 0;
+  padding: 20px;
 }
 
-/* El canvas/img del QR queda centrado y nunca desborda */
 #modalQrCanvas {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 160px;
-  height: 160px;
   flex-shrink: 0;
 }
 
 .modal-ar-qr-wrap canvas,
 .modal-ar-qr-wrap img {
   display: block !important;
-  width: 160px !important;
-  height: 160px !important;
+  width: 176px !important;
+  height: 176px !important;
   image-rendering: crisp-edges;
   image-rendering: pixelated;
 }
@@ -1425,9 +1442,8 @@ img, video { display: block; max-width: 100%; }
 
 @media (max-width: 400px) {
   .modal-ar-card { padding: 24px 20px 20px; border-radius: 16px; }
-  .modal-ar-qr-wrap { width: 190px; height: 190px; }
-  #modalQrCanvas { width: 140px; height: 140px; }
-  .modal-ar-qr-wrap canvas, .modal-ar-qr-wrap img { width: 140px !important; height: 140px !important; }
+  .modal-ar-qr-wrap { width: 190px; height: 190px; padding: 17px; }
+  .modal-ar-qr-wrap canvas, .modal-ar-qr-wrap img { width: 156px !important; height: 156px !important; }
 }
 
 /* QR expired overlay (inside the box) */

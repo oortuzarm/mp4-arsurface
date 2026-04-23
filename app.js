@@ -509,11 +509,11 @@ function buildArHtml(config, vw, vh, posterDataUrl, zipMode, videoUrl) {
 '<div id="fallback">\n' +
 '  <div class="fb-badge">Vista sin WebXR</div>\n' +
 '  <h2>' + escHtml(name) + '</h2>\n' +
-'  <video src="' + videoSrc + '" ' + autoplayA + ' ' + loopA + ' ' + mutedA + ' ' + posterA + ' playsinline controls></video>\n' +
+'  <video src="' + videoSrc + '" ' + loopA + ' muted ' + posterA + ' playsinline controls></video>\n' +
 '  <p>Para la experiencia AR completa abre este archivo desde Chrome en Android.</p>\n' +
 '</div>\n' +
 '\n' +
-'<video id="arVideo" src="' + videoSrc + '" ' + loopA + ' ' + mutedA + ' ' + posterA + ' playsinline style="display:none" crossorigin="anonymous"></video>\n' +
+'<video id="arVideo" src="' + videoSrc + '" ' + loopA + ' muted ' + posterA + ' playsinline style="display:none" crossorigin="anonymous"></video>\n' +
 '\n' +
 '<script type="module">\n' +
 'import * as THREE from "https://unpkg.com/three@0.158.0/build/three.module.js";\n' +
@@ -575,6 +575,11 @@ function buildArHtml(config, vw, vh, posterDataUrl, zipMode, videoUrl) {
 'function showFallback() {\n' +
 '  startScreen.style.display = "none";\n' +
 '  fallbackEl.style.display  = "flex";\n' +
+'  var fv = fallbackEl.querySelector("video");\n' +
+'  if (fv) {\n' +
+'    fv.muted = MUTED;\n' +
+'    fv.play().catch(function() { fv.muted = true; fv.play().catch(function(){}); });\n' +
+'  }\n' +
 '}\n' +
 '\n' +
 'async function initAR() {\n' +
@@ -960,8 +965,8 @@ function generateQRInto(canvasId, placeholderId, url) {
   try {
     new QRCode(container, {
       text:         url,
-      width:        160,   // QR más pequeño que la caja (216px) → margen blanco visible
-      height:       160,
+      width:        176,
+      height:       176,
       colorDark:    '#000000',
       colorLight:   '#ffffff',
       correctLevel: QRCode.CorrectLevel.H,  // máxima corrección de errores
