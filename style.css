@@ -1390,13 +1390,17 @@ img, video { display: block; max-width: 100%; }
   flex-shrink: 0;
 }
 
-.modal-ar-qr-wrap canvas,
-.modal-ar-qr-wrap img {
+.modal-ar-qr-wrap canvas {
   display: block !important;
   width: 176px !important;
   height: 176px !important;
   image-rendering: crisp-edges;
   image-rendering: pixelated;
+}
+
+/* QRCode.js appends an img fallback alongside the canvas — keep it hidden */
+#modalQrCanvas img {
+  display: none !important;
 }
 
 .modal-ar-qr-ph {
@@ -1443,7 +1447,7 @@ img, video { display: block; max-width: 100%; }
 @media (max-width: 400px) {
   .modal-ar-card { padding: 24px 20px 20px; border-radius: 16px; }
   .modal-ar-qr-wrap { width: 190px; height: 190px; padding: 17px; }
-  .modal-ar-qr-wrap canvas, .modal-ar-qr-wrap img { width: 156px !important; height: 156px !important; }
+  .modal-ar-qr-wrap canvas { width: 156px !important; height: 156px !important; }
 }
 
 /* QR expired overlay (inside the box) */
