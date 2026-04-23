@@ -448,14 +448,14 @@ function buildArHtml(config, vw, vh, posterDataUrl, zipMode, videoUrl) {
 '  <title>' + escHtml(name) + ' · WebAR · Lookiar</title>\n' +
 '  <style>\n' +
 '    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}\n' +
-'    body{background:#0a0a0f;color:#f0f0f5;font-family:system-ui,sans-serif;height:100dvh;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center}\n' +
+'    body{background:#050e1f;color:#f0f0f5;font-family:system-ui,sans-serif;height:100dvh;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center}\n' +
 '    #start-screen{text-align:center;padding:32px 24px;display:flex;flex-direction:column;align-items:center;gap:16px}\n' +
-'    .ar-logo{display:flex;align-items:center;gap:8px;color:#8b8ba0;font-size:13px;margin-bottom:8px}\n' +
-'    .logo-mark{width:26px;height:26px;background:linear-gradient(135deg,#6366f1,#a78bfa);border-radius:6px;display:grid;place-items:center;font-weight:700;font-size:12px;color:#fff}\n' +
+'    .ar-logo{display:flex;align-items:center;gap:8px;color:#6b85a0;font-size:13px;margin-bottom:8px}\n' +
+'    .logo-mark{width:26px;height:26px;background:linear-gradient(135deg,#29ABE2,#5bc9e8);border-radius:6px;display:grid;place-items:center;font-weight:700;font-size:12px;color:#fff}\n' +
 '    h1{font-size:22px;font-weight:700;letter-spacing:-0.5px;line-height:1.2}\n' +
-'    p{font-size:14px;color:#8b8ba0;max-width:300px;line-height:1.6}\n' +
-'    .badge{background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:#a78bfa;font-size:11px;padding:4px 10px;border-radius:99px;letter-spacing:.5px}\n' +
-'    .btn-start{background:linear-gradient(135deg,#6366f1,#a78bfa);color:#fff;border:none;border-radius:12px;padding:14px 28px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;box-shadow:0 4px 20px rgba(99,102,241,.3)}\n' +
+'    p{font-size:14px;color:#b0c4d8;max-width:300px;line-height:1.6}\n' +
+'    .badge{background:rgba(41,171,226,.12);border:1px solid rgba(41,171,226,.25);color:#5bc9e8;font-size:11px;padding:4px 10px;border-radius:99px;letter-spacing:.5px}\n' +
+'    .btn-start{background:#29ABE2;color:#fff;border:none;border-radius:12px;padding:14px 28px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 4px 20px rgba(41,171,226,.35)}\n' +
 '    .device-warning{background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.2);color:#f43f5e;font-size:12px;padding:10px 14px;border-radius:8px;max-width:300px;line-height:1.5;display:none}\n' +
 '    #ar-container{position:fixed;inset:0;display:none}\n' +
 '    canvas{display:block;width:100%!important;height:100%!important}\n' +
@@ -465,19 +465,19 @@ function buildArHtml(config, vw, vh, posterDataUrl, zipMode, videoUrl) {
 '    #hud-hint{font-size:12px;color:rgba(255,255,255,.6)}\n' +
 '    .hud-btns{display:flex;gap:8px;pointer-events:auto}\n' +
 '    .hud-btn{color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit;background:rgba(0,0,0,.5)}\n' +
-'    #btn-reattach{background:rgba(99,102,241,.7);border-color:transparent;display:none}\n' +
+'    #btn-reattach{background:rgba(41,171,226,.75);border-color:transparent;display:none}\n' +
 '    #status-hint{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);text-align:center;color:#fff;font-size:13px;pointer-events:none;z-index:10;transition:opacity .3s;white-space:nowrap}\n' +
 '    #status-hint span{background:rgba(0,0,0,.55);backdrop-filter:blur(8px);padding:8px 18px;border-radius:99px;display:inline-block}\n' +
-'    #fallback{position:fixed;inset:0;background:#0a0a0f;display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px;text-align:center;padding:32px}\n' +
+'    #fallback{position:fixed;inset:0;background:#050e1f;display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px;text-align:center;padding:32px}\n' +
 '    #fallback h2{font-size:20px;font-weight:600}\n' +
-'    #fallback p{color:#8b8ba0;font-size:14px;max-width:300px}\n' +
-'    #fallback video{max-width:min(400px,100%);border-radius:16px;box-shadow:0 0 60px rgba(99,102,241,.3)}\n' +
-'    .fb-badge{background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);color:#a78bfa;font-size:11px;padding:4px 10px;border-radius:99px}\n' +
-'    #expired-screen{position:fixed;inset:0;background:#0a0a0f;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:32px;z-index:999}\n' +
+'    #fallback p{color:#b0c4d8;font-size:14px;max-width:300px}\n' +
+'    #fallback video{max-width:min(400px,100%);border-radius:16px;box-shadow:0 0 60px rgba(41,171,226,.25)}\n' +
+'    .fb-badge{background:rgba(41,171,226,.1);border:1px solid rgba(41,171,226,.2);color:#5bc9e8;font-size:11px;padding:4px 10px;border-radius:99px}\n' +
+'    #expired-screen{position:fixed;inset:0;background:#050e1f;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:32px;z-index:999}\n' +
 '    .expired-icon{width:64px;height:64px;background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.2);border-radius:50%;display:grid;place-items:center;color:#f43f5e}\n' +
 '    .expired-title{font-size:20px;font-weight:700;color:#f0f0f5}\n' +
-'    .expired-desc{font-size:14px;color:#8b8ba0;max-width:280px;line-height:1.6}\n' +
-'    .btn-expired{background:linear-gradient(135deg,#6366f1,#a78bfa);color:#fff;border:none;border-radius:12px;padding:12px 24px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}\n' +
+'    .expired-desc{font-size:14px;color:#b0c4d8;max-width:280px;line-height:1.6}\n' +
+'    .btn-expired{background:#29ABE2;color:#fff;border:none;border-radius:12px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(41,171,226,.35)}\n' +
 '  </style>\n' +
 '</head>\n' +
 '<body>\n' +
@@ -528,10 +528,12 @@ function buildArHtml(config, vw, vh, posterDataUrl, zipMode, videoUrl) {
 'const PLANE_H  = PLANE_W / ASPECT;\n' +
 'const SHADOW   = ' + (shadow ? 'true' : 'false') + ';\n' +
 'const AUTOPLAY = ' + (autoplay ? 'true' : 'false') + ';\n' +
+'const MUTED    = ' + (muted  ? 'true' : 'false') + ';\n' +
 '\n' +
 'let renderer, scene, camera, xrSession;\n' +
 'let reticle, videoMesh, shadowMesh;\n' +
 'let placed = false, hitTestSource = null;\n' +
+'let lastHitNormal = new THREE.Vector3(0, 1, 0);\n' +
 'const video      = document.getElementById("arVideo");\n' +
 'const btnStart   = document.getElementById("btnStart");\n' +
 'const arContainer= document.getElementById("ar-container");\n' +
@@ -567,7 +569,7 @@ function buildArHtml(config, vw, vh, posterDataUrl, zipMode, videoUrl) {
 '  placed = false;\n' +
 '  if (videoMesh) videoMesh.visible = false;\n' +
 '  if (shadowMesh) shadowMesh.visible = false;\n' +
-'  if (reticle) reticle.visible = true;\n' +
+'  if (reticle) reticle.visible = false;\n' +
 '  btnReattach.style.display = "none";\n' +
 '  hintEl.style.opacity = "1";\n' +
 '  hudHint.textContent = "Buscando superficie…";\n' +
@@ -592,7 +594,7 @@ function buildArHtml(config, vw, vh, posterDataUrl, zipMode, videoUrl) {
 '  // Reticle\n' +
 '  const rGeo = new THREE.RingGeometry(0.08, 0.1, 32);\n' +
 '  rGeo.rotateX(-Math.PI/2);\n' +
-'  reticle = new THREE.Mesh(rGeo, new THREE.MeshBasicMaterial({ color:0x6366f1, side:THREE.DoubleSide }));\n' +
+'  reticle = new THREE.Mesh(rGeo, new THREE.MeshBasicMaterial({ color:0x29ABE2, side:THREE.DoubleSide }));\n' +
 '  reticle.visible = false;\n' +
 '  scene.add(reticle);\n' +
 '\n' +
@@ -647,16 +649,39 @@ function buildArHtml(config, vw, vh, posterDataUrl, zipMode, videoUrl) {
 'function onSelect() {\n' +
 '  if (!reticle.visible || placed) return;\n' +
 '  placed = true;\n' +
+'  const isHorizontal = lastHitNormal.y > 0.7;\n' +
 '  videoMesh.position.copy(reticle.position);\n' +
-'  videoMesh.position.y += PLANE_H / 2;\n' +
-'  videoMesh.quaternion.copy(reticle.quaternion);\n' +
+'  if (isHorizontal) {\n' +
+'    videoMesh.position.y += PLANE_H / 2;\n' +
+'    const camPos = new THREE.Vector3();\n' +
+'    camera.getWorldPosition(camPos);\n' +
+'    const toCamera = new THREE.Vector3(\n' +
+'      camPos.x - videoMesh.position.x, 0, camPos.z - videoMesh.position.z\n' +
+'    ).normalize();\n' +
+'    videoMesh.rotation.set(0, Math.atan2(toCamera.x, toCamera.z), 0);\n' +
+'  } else {\n' +
+'    const lookTarget = new THREE.Vector3().subVectors(reticle.position, lastHitNormal);\n' +
+'    videoMesh.lookAt(lookTarget);\n' +
+'  }\n' +
 '  videoMesh.visible = true;\n' +
-'  if (shadowMesh) { shadowMesh.position.copy(reticle.position); shadowMesh.position.y += 0.001; shadowMesh.visible = true; }\n' +
+'  if (SHADOW && shadowMesh) {\n' +
+'    if (isHorizontal) {\n' +
+'      shadowMesh.position.copy(reticle.position);\n' +
+'      shadowMesh.position.y += 0.001;\n' +
+'      shadowMesh.rotation.set(0, 0, 0);\n' +
+'      shadowMesh.visible = true;\n' +
+'    } else {\n' +
+'      shadowMesh.visible = false;\n' +
+'    }\n' +
+'  }\n' +
 '  reticle.visible = false;\n' +
 '  hintEl.style.opacity = "0";\n' +
 '  hudHint.textContent = "Video colocado";\n' +
 '  btnReattach.style.display = "inline-block";\n' +
-'  if (AUTOPLAY) { video.muted = true; video.play().catch(()=>{}); }\n' +
+'  if (AUTOPLAY) {\n' +
+'    video.muted = MUTED;\n' +
+'    video.play().catch(function() { video.muted = true; video.play().catch(function(){}); });\n' +
+'  }\n' +
 '}\n' +
 '\n' +
 'function onFrame(t, frame) {\n' +
@@ -669,7 +694,9 @@ function buildArHtml(config, vw, vh, posterDataUrl, zipMode, videoUrl) {
 '      reticle.visible = true;\n' +
 '      reticle.matrix.fromArray(pose.transform.matrix);\n' +
 '      reticle.matrix.decompose(reticle.position, reticle.quaternion, reticle.scale);\n' +
-'      hudHint.textContent = "Toca para colocar el video";\n' +
+'      const m = pose.transform.matrix;\n' +
+'      lastHitNormal.set(m[4], m[5], m[6]).normalize();\n' +
+'      hudHint.textContent = lastHitNormal.y > 0.7 ? "Toca para colocar el video" : "Superficie vertical detectada — toca para colocar";\n' +
 '    } else {\n' +
 '      reticle.visible = false;\n' +
 '      hudHint.textContent = "Buscando superficie…";\n' +
