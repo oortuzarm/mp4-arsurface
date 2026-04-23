@@ -35,6 +35,8 @@ module.exports = async function handler(req, res) {
     const blob = await put('experiences/' + id + '.html', html, {
       access: 'public',
       contentType: 'text/html; charset=utf-8',
+      contentDisposition: 'inline',
+      addRandomSuffix: false,
     });
     console.log('save-experience: blob uploaded', blob.url);
 
