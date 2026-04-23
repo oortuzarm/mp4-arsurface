@@ -82,6 +82,7 @@ var state = {
   videoHeight:   0,
   generatedHtml: null,
   posterDataUrl: null,
+  shortUrl:      null,
   config: {
     name:     'Mi experiencia AR',
     aspect:   'auto',
@@ -97,6 +98,12 @@ var state = {
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
+  // Si la URL tiene ?experience=id el usuario escaneó el QR → redirigir a la experiencia
+  var expId = new URLSearchParams(window.location.search).get('experience');
+  if (expId) {
+    window.location.replace('/api/get-experience?id=' + encodeURIComponent(expId));
+    return;
+  }
   wireUpload();
   wireConfig();
   wireActions();
@@ -272,51 +279,124 @@ function generate() {
   setTimeout(function() {
     $('step-generating').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 50);
-
-  var steps = [
-    [15, 'Capturando primer frame…',              500],
-    [35, 'Generando HTML de la experiencia…',     600],
-    [60, 'Procesando configuración AR…',           400],
-    [80, 'Aplicando opciones de reproducción…',   350],
-    [95, 'Casi listo…',                           300],
-  ];
-
-  var i = 0;
-  function runStep() {
-    if (i >= steps.length) { doGenerate(); return; }
-    var step = steps[i++];
-    setProgressUI(step[0], step[1]);
-    setTimeout(runStep, step[2]);
-  }
-  runStep();
+  doGenerate();
 }
 
 function doGenerate() {
-  startQrSession(); // establece state.qrExpiry = ahora + 1h
-  Promise.resolve()
+  startQrSession();
+  var onServer = window.location.protocol !== 'file:';
+
+  setProgressUI(10, 'Capturando primer frame…');
+
+  var p = delay(400)
     .then(function() {
       if (state.config.poster) return captureFirstFrame($('previewVideo'));
       return null;
     })
     .then(function(poster) {
       state.posterDataUrl = poster;
+      setProgressUI(30, 'Generando escena AR…');
+      return delay(350);
+    });
+
+  if (!onServer) {
+    // file:// — sin backend: construir con placeholder de video local
+    p = p.then(function() {
       state.generatedHtml = buildArHtml(
-        state.config,
-        state.videoWidth,
-        state.videoHeight,
-        state.config.poster ? poster : null,
-        false
+        state.config, state.videoWidth, state.videoHeight,
+        state.posterDataUrl, false, null
       );
+      state.shortUrl = null;
       setProgressUI(100, 'Completado');
       return delay(400);
-    })
-    .then(function() { showResult(); })
-    .catch(function(err) {
-      console.error('Generate error:', err);
-      hide('step-generating');
-      show('step-config');
-      alert('Ocurrió un error al generar. Intenta de nuevo.\n\n' + err.message);
     });
+  } else {
+    // Vercel — subir video y guardar experiencia en la nube
+    p = p
+      .then(function() {
+        setProgressUI(45, 'Subiendo video…');
+        return uploadVideoToBlob(state.videoFile);
+      })
+      .then(function(videoUrl) {
+        setProgressUI(72, 'Guardando experiencia…');
+        var html = buildArHtml(
+          state.config, state.videoWidth, state.videoHeight,
+          state.posterDataUrl, false, videoUrl
+        );
+        state.generatedHtml = html;
+        return saveExperience(html);
+      })
+      .then(function(result) {
+        state.shortUrl = result.shortUrl;
+        if (result.expiresAt) state.qrExpiry = result.expiresAt;
+        setProgressUI(95, 'Generando código QR…');
+        return delay(300);
+      })
+      .then(function() {
+        setProgressUI(100, 'Completado');
+        return delay(400);
+      });
+  }
+
+  p.then(function() { showResult(); })
+   .catch(function(err) {
+     console.error('Generate error:', err);
+     hide('step-generating');
+     show('step-config');
+     alert('Ocurrió un error al generar. Intenta de nuevo.\n\n' + err.message);
+   });
+}
+
+// ─── CLOUD UPLOAD ─────────────────────────────────────────────────────────────
+
+function uploadVideoToBlob(file) {
+  var filename = 'videos/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.mp4';
+  var tokenUrl = '/api/upload-token';
+
+  return fetch(tokenUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      type: 'blob.generate-client-token',
+      payload: {
+        pathname: filename,
+        callbackUrl: window.location.origin + tokenUrl,
+        multipart: false,
+      },
+    }),
+  })
+  .then(function(res) {
+    if (!res.ok) throw new Error('No se pudo obtener token de subida (' + res.status + ')');
+    return res.json();
+  })
+  .then(function(data) {
+    return fetch('https://blob.vercel-storage.com/' + filename, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Bearer ' + data.clientToken,
+        'x-content-type': 'video/mp4',
+        'x-cache-control-max-age': '3600',
+      },
+      body: file,
+    });
+  })
+  .then(function(res) {
+    if (!res.ok) throw new Error('Error al subir video: ' + res.status);
+    return res.json();
+  })
+  .then(function(blob) { return blob.url; });
+}
+
+function saveExperience(html) {
+  return fetch('/api/save-experience', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ html: html }),
+  })
+  .then(function(res) {
+    if (!res.ok) throw new Error('Error al guardar experiencia: ' + res.status);
+    return res.json();
+  });
 }
 
 // ─── CAPTURE FIRST FRAME ──────────────────────────────────────────────────────
@@ -339,7 +419,7 @@ function captureFirstFrame(videoEl) {
 }
 
 // ─── BUILD AR HTML ────────────────────────────────────────────────────────────
-function buildArHtml(config, vw, vh, posterDataUrl, zipMode) {
+function buildArHtml(config, vw, vh, posterDataUrl, zipMode, videoUrl) {
   var name       = config.name;
   var aspect     = config.aspect;
   var size       = config.size;
@@ -354,7 +434,7 @@ function buildArHtml(config, vw, vh, posterDataUrl, zipMode) {
   // Expiración: 1 hora desde el momento de generación del demo
   var expiresAt = state.qrExpiry || (Date.now() + QR_TTL_MS);
 
-  var videoSrc    = zipMode ? 'assets/video.mp4' : '__VIDEO_BLOB_URL__';
+  var videoSrc    = zipMode ? 'assets/video.mp4' : (videoUrl || '__VIDEO_BLOB_URL__');
   var autoplayA   = autoplay ? 'autoplay' : '';
   var loopA       = loop     ? 'loop'     : '';
   var mutedA      = muted    ? 'muted'    : '';
@@ -749,13 +829,16 @@ function openDemo() {
   if (!state.generatedHtml) return;
 
   if (isMobile()) {
-    // Móvil: abrir la experiencia AR directamente en nueva pestaña
-    var html = state.generatedHtml.replace(/__VIDEO_BLOB_URL__/g, state.videoUrl);
-    var blob = new Blob([html], { type: 'text/html' });
-    var url  = URL.createObjectURL(blob);
-    window.open(url, '_blank');
+    if (state.shortUrl) {
+      // Desplegado en Vercel: abrir la URL corta (experiencia en la nube)
+      window.open(state.shortUrl, '_blank');
+    } else {
+      // Local (file://): crear blob URL con el video local incrustado
+      var html = state.generatedHtml.replace(/__VIDEO_BLOB_URL__/g, state.videoUrl);
+      var blob = new Blob([html], { type: 'text/html' });
+      window.open(URL.createObjectURL(blob), '_blank');
+    }
   } else {
-    // Desktop: mostrar modal con QR + opciones para móvil
     openMobileModal();
   }
 }
@@ -777,8 +860,8 @@ function openMobileModal() {
   }
 
   if (onServer) {
-    // Servidor: QR automático con la URL actual
-    generateQRInto('modalQrCanvas', 'modalQrPlaceholder', window.location.href);
+    // Vercel: QR con la URL corta pública de la experiencia
+    generateQRInto('modalQrCanvas', 'modalQrPlaceholder', state.shortUrl || window.location.href);
     startCountdown();
   } else {
     // file:// sin servidor → mostrar aviso limpio
@@ -811,7 +894,8 @@ function download() {
     state.videoWidth,
     state.videoHeight,
     state.config.poster ? state.posterDataUrl : null,
-    true
+    true,
+    null
   );
 
   state.videoFile.arrayBuffer().then(function(buf) {
@@ -898,6 +982,7 @@ function resetAll() {
   resetFile();
   state.generatedHtml  = null;
   state.posterDataUrl  = null;
+  state.shortUrl       = null;
   state.qrCreatedAt    = null;
   state.qrExpiry       = null;
   qrInstance           = null;

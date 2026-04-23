@@ -1,0 +1,9 @@
+{
+  "name": "ar-video-surface-builder",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@vercel/blob": "^0.23.4",
+    "@vercel/kv": "^2.0.0"
+  }
+}
