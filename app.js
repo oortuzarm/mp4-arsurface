@@ -353,54 +353,28 @@ function uploadVideoToBlob(file) {
   var rawExt = (file.name || '').split('.').pop().toLowerCase();
   var ext = (rawExt === 'mov') ? 'mov' : 'mp4';
   var pathname = 'videos/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.' + ext;
-  var handleUploadUrl = window.location.origin + '/api/upload-token';
 
-  // Step 1: get client token from our server (no file bytes involved)
-  return fetch('/api/upload-token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      type: 'blob.generate-client-token',
-      payload: { pathname: pathname, callbackUrl: handleUploadUrl, multipart: false },
-    }),
-  })
-  .then(function(res) {
-    return res.text().then(function(text) {
-      if (!res.ok) {
-        var msg; try { msg = JSON.parse(text).error; } catch(e) { msg = text.slice(0, 300); }
-        throw new Error('Error de token (' + res.status + '): ' + msg);
-      }
-      try { return JSON.parse(text); } catch(e) { throw new Error('Token inválido: ' + text.slice(0, 200)); }
-    });
-  })
-  .then(function(data) {
-    if (!data.clientToken) throw new Error('Servidor no devolvió clientToken');
-    var contentType = file.type || 'video/mp4';
+  console.log('[blob] archivo:', file.name, '| tipo:', file.type, '| tamaño:', (file.size / 1024 / 1024).toFixed(2) + ' MB');
+  console.log('[blob] pathname destino:', pathname);
 
-    // Step 2: upload file directly to Vercel Blob (no serverless, no 413)
-    return fetch('https://blob.vercel-storage.com/' + encodeURIComponent(pathname), {
-      method: 'PUT',
-      headers: {
-        'Authorization': 'Bearer ' + data.clientToken,
-        'x-content-type': contentType,
-        'x-cache-control-max-age': '3600',
-      },
-      body: file,
+  // Use the official @vercel/blob client via CDN — handles CORS, headers and
+  // the token/callback flow exactly as blob.vercel-storage.com expects.
+  return import('https://esm.sh/@vercel/blob@0.23.4/client')
+    .then(function(blobClient) {
+      console.log('[blob] módulo cargado, iniciando upload directo...');
+      return blobClient.upload(pathname, file, {
+        access: 'public',
+        handleUploadUrl: '/api/upload-token',
+      });
+    })
+    .then(function(blob) {
+      console.log('[blob] subida completa:', blob.url);
+      return blob.url;
+    })
+    .catch(function(err) {
+      console.error('[blob] error en subida:', err.message || err);
+      throw new Error('Error subiendo video: ' + (err.message || String(err)));
     });
-  })
-  .then(function(res) {
-    return res.text().then(function(text) {
-      if (!res.ok) {
-        var msg; try { msg = JSON.parse(text).error || text; } catch(e) { msg = text.slice(0, 300); }
-        throw new Error('Error subiendo a Blob (' + res.status + '): ' + msg);
-      }
-      try { return JSON.parse(text); } catch(e) { throw new Error('Blob respuesta inválida: ' + text.slice(0, 200)); }
-    });
-  })
-  .then(function(blob) {
-    if (!blob.url) throw new Error('Blob no devolvió URL');
-    return blob.url;
-  });
 }
 
 function saveExperience(html) {
