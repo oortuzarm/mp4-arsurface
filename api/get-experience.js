@@ -38,8 +38,19 @@ module.exports = async function handler(req, res) {
       return res.status(410).send(expiredHtml());
     }
 
-    console.log('get-experience: redirecting to', blobUrl);
-    return res.redirect(302, blobUrl);
+    // Vercel Blob forces Content-Disposition: attachment on HTML files (XSS protection).
+    // Proxy the content directly so we control the response headers.
+    console.log('get-experience: fetching html from blob', blobUrl);
+    const blobRes = await fetch(blobUrl);
+    if (!blobRes.ok) {
+      console.error('get-experience: blob fetch failed', blobRes.status);
+      return res.status(502).json({ error: 'Error fetching experience' });
+    }
+    const html = await blobRes.text();
+    console.log('get-experience: serving html, length=%d', html.length);
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Content-Disposition', 'inline');
+    return res.status(200).send(html);
   } catch (err) {
     console.error('get-experience error:', err);
     return res.status(500).json({ error: err.message });

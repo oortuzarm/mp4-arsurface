@@ -32,13 +32,13 @@ module.exports = async function handler(req, res) {
   console.log('save-experience: id=%s html.length=%d', id, html.length);
 
   try {
+    console.log('save-experience: uploading html to blob, contentType=text/html, contentDisposition=inline');
     const blob = await put('experiences/' + id + '.html', html, {
       access: 'public',
       contentType: 'text/html; charset=utf-8',
-      contentDisposition: 'inline',
       addRandomSuffix: false,
     });
-    console.log('save-experience: blob uploaded', blob.url);
+    console.log('save-experience: blob uploaded url=%s', blob.url);
 
     const expiresAt = Date.now() + TTL_SECONDS * 1000;
 
