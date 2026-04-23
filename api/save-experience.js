@@ -7,14 +7,15 @@ const TTL_SECONDS = 3600;
 let redis;
 function getRedis() {
   if (!redis) {
-    redis = new Redis(process.env.REDIS_URL, {
-      tls: { rejectUnauthorized: false },
-      maxRetriesPerRequest: 1,
+    const url = process.env.REDIS_URL;
+    console.log('save-experience: connecting to redis, tls:', url.startsWith('rediss://'));
+    redis = new Redis(url, {
+      maxRetriesPerRequest: null,
       enableReadyCheck: false,
-      lazyConnect: false,
+      tls: url.startsWith('rediss://') ? { rejectUnauthorized: false } : undefined,
     });
     redis.on('connect', () => console.log('save-experience: redis connected'));
-    redis.on('error', (err) => console.error('save-experience: redis error', err.message));
+    redis.on('error', (err) => console.error('save-experience: redis error:', err.message));
   }
   return redis;
 }

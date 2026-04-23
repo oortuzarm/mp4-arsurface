@@ -3,14 +3,15 @@ const Redis = require('ioredis');
 let redis;
 function getRedis() {
   if (!redis) {
-    redis = new Redis(process.env.REDIS_URL, {
-      tls: { rejectUnauthorized: false },
-      maxRetriesPerRequest: 1,
+    const url = process.env.REDIS_URL;
+    console.log('get-experience: connecting to redis, tls:', url.startsWith('rediss://'));
+    redis = new Redis(url, {
+      maxRetriesPerRequest: null,
       enableReadyCheck: false,
-      lazyConnect: false,
+      tls: url.startsWith('rediss://') ? { rejectUnauthorized: false } : undefined,
     });
     redis.on('connect', () => console.log('get-experience: redis connected'));
-    redis.on('error', (err) => console.error('get-experience: redis error', err.message));
+    redis.on('error', (err) => console.error('get-experience: redis error:', err.message));
   }
   return redis;
 }
