@@ -350,41 +350,23 @@ function doGenerate() {
 // ─── CLOUD UPLOAD ─────────────────────────────────────────────────────────────
 
 function uploadVideoToBlob(file) {
-  var filename = 'videos/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.mp4';
-  var tokenUrl = '/api/upload-token';
-
-  return fetch(tokenUrl, {
+  var contentType = file.type || 'video/mp4';
+  return fetch('/api/upload-video', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      type: 'blob.generate-client-token',
-      payload: {
-        pathname: filename,
-        callbackUrl: window.location.origin + tokenUrl,
-        multipart: false,
-      },
-    }),
+    headers: { 'Content-Type': contentType },
+    body: file,
   })
   .then(function(res) {
-    if (!res.ok) throw new Error('No se pudo obtener token de subida (' + res.status + ')');
-    return res.json();
-  })
-  .then(function(data) {
-    return fetch('https://blob.vercel-storage.com/' + filename, {
-      method: 'PUT',
-      headers: {
-        'Authorization': 'Bearer ' + data.clientToken,
-        'x-content-type': 'video/mp4',
-        'x-cache-control-max-age': '3600',
-      },
-      body: file,
+    return res.text().then(function(text) {
+      if (!res.ok) {
+        var msg;
+        try { msg = JSON.parse(text).error; } catch(e) { msg = text; }
+        throw new Error('Error al subir video (' + res.status + '): ' + (msg || 'sin detalle'));
+      }
+      return JSON.parse(text);
     });
   })
-  .then(function(res) {
-    if (!res.ok) throw new Error('Error al subir video: ' + res.status);
-    return res.json();
-  })
-  .then(function(blob) { return blob.url; });
+  .then(function(data) { return data.videoUrl; });
 }
 
 function saveExperience(html) {
@@ -394,8 +376,14 @@ function saveExperience(html) {
     body: JSON.stringify({ html: html }),
   })
   .then(function(res) {
-    if (!res.ok) throw new Error('Error al guardar experiencia: ' + res.status);
-    return res.json();
+    return res.text().then(function(text) {
+      if (!res.ok) {
+        var msg;
+        try { msg = JSON.parse(text).error; } catch(e) { msg = text; }
+        throw new Error('Error al guardar experiencia (' + res.status + '): ' + (msg || 'sin detalle'));
+      }
+      return JSON.parse(text);
+    });
   });
 }
 

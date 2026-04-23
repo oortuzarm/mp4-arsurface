@@ -10,6 +10,7 @@ module.exports = async function handler(req, res) {
   const { id } = req.query;
   if (!id) return res.status(400).json({ error: 'Missing id' });
 
+  console.log('get-experience: id=%s', id);
   try {
     const client = getRedis();
     const raw = await client.get(id);
@@ -27,6 +28,7 @@ module.exports = async function handler(req, res) {
       return res.status(410).send(expiredHtml());
     }
 
+    console.log('get-experience: redirecting to', blobUrl);
     return res.redirect(302, blobUrl);
   } catch (err) {
     console.error('get-experience error:', err);

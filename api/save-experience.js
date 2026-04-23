@@ -19,17 +19,20 @@ module.exports = async function handler(req, res) {
   }
 
   const id = 'exp-' + randomBytes(6).toString('hex');
+  console.log('save-experience: id=%s html.length=%d', id, html.length);
 
   try {
     const blob = await put('experiences/' + id + '.html', html, {
       access: 'public',
       contentType: 'text/html; charset=utf-8',
     });
+    console.log('save-experience: blob uploaded', blob.url);
 
     const expiresAt = Date.now() + TTL_SECONDS * 1000;
 
     const client = getRedis();
     await client.set(id, JSON.stringify({ blobUrl: blob.url, expiresAt }), 'EX', TTL_SECONDS);
+    console.log('save-experience: redis set ok');
 
     const proto = req.headers['x-forwarded-proto'] || 'https';
     const host  = req.headers['x-forwarded-host']  || req.headers.host;
